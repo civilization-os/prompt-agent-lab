@@ -577,6 +577,7 @@ export const App: React.FC = () => {
             onUpdateEvaluatorConfig={(cfg) => setEvaluatorConfig((prev) => ({ ...prev, ...cfg }))}
             onAdoptPrompt={handleAdoptPrompt}
             hasMessages={messages.length > 0}
+            purpose={purpose}
           />
         </section>
       </main>

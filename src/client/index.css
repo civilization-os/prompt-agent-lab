@@ -1,16 +1,30 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --font-mono: 'JetBrains Mono', "Cascadia Code", "Fira Code", Consolas, "Courier New", monospace;
+  }
+
   body {
-    @apply bg-slate-950 text-slate-100 font-sans;
+    font-family: var(--font-sans);
+    background-color: #020617; /* slate-950 */
+    color: #f1f5f9; /* slate-100 */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  code, pre, kbd, samp {
+    font-family: var(--font-mono);
   }
 }
 
 /* Custom scrollbar for modern developer feel */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -24,4 +38,15 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.4);
+}
+
+/* 自定义排版微调 */
+.eval-card-content p {
+  line-height: 1.65;
+  margin-bottom: 0.5rem;
+}
+
+.eval-card-content strong {
+  color: #f8fafc;
+  font-weight: 600;
 }
