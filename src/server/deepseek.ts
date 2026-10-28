@@ -99,6 +99,29 @@ export class DeepSeekChatModel implements ILoopChatModel {
     }));
   }
 
+  private formatResponseFormat(
+    format: unknown,
+    model?: string
+  ): { type: 'text' | 'json_object' } | undefined {
+    // deepseek-reasoner 官方 API 仅支持 text 格式，不支持 json_object
+    if (model === 'deepseek-reasoner') return undefined;
+
+    if (!format) return undefined;
+    if (typeof format === 'string') {
+      if (format === 'json_object') {
+        return { type: 'json_object' };
+      }
+      return undefined; // 默认为 text，无需额外下发字段
+    }
+    if (typeof format === 'object' && format !== null) {
+      const f = format as { type?: string };
+      if (f.type === 'json_object') {
+        return { type: 'json_object' };
+      }
+    }
+    return undefined;
+  }
+
   /**
    * 一次性调用 (Non-streaming Invoke)
    */
@@ -134,11 +157,18 @@ export class DeepSeekChatModel implements ILoopChatModel {
     const presPenalty = (params.presence_penalty as number) ?? this.defaultOptions.presence_penalty;
     if (presPenalty !== undefined) body.presence_penalty = presPenalty;
 
-    const respFormat = (params.response_format as { type: 'text' | 'json_object' }) ?? this.defaultOptions.response_format;
+    const respFormat = this.formatResponseFormat(params.response_format ?? this.defaultOptions.response_format, body.model as string);
     if (respFormat) body.response_format = respFormat;
 
     const stop = (params.stop as string | string[]) ?? this.defaultOptions.stop;
-    if (stop) body.stop = stop;
+    if (stop) {
+      if (typeof stop === 'string' && stop.trim()) {
+        body.stop = stop.trim();
+      } else if (Array.isArray(stop) && stop.length > 0) {
+        const filtered = stop.filter((s) => typeof s === 'string' && s.trim());
+        if (filtered.length > 0) body.stop = filtered;
+      }
+    }
 
     if (formattedTools && formattedTools.length > 0 && body.model !== 'deepseek-reasoner') {
       body.tools = formattedTools;
@@ -254,11 +284,18 @@ export class DeepSeekChatModel implements ILoopChatModel {
     const presPenalty = (params.presence_penalty as number) ?? this.defaultOptions.presence_penalty;
     if (presPenalty !== undefined) body.presence_penalty = presPenalty;
 
-    const respFormat = (params.response_format as { type: 'text' | 'json_object' }) ?? this.defaultOptions.response_format;
+    const respFormat = this.formatResponseFormat(params.response_format ?? this.defaultOptions.response_format, body.model as string);
     if (respFormat) body.response_format = respFormat;
 
     const stop = (params.stop as string | string[]) ?? this.defaultOptions.stop;
-    if (stop) body.stop = stop;
+    if (stop) {
+      if (typeof stop === 'string' && stop.trim()) {
+        body.stop = stop.trim();
+      } else if (Array.isArray(stop) && stop.length > 0) {
+        const filtered = stop.filter((s) => typeof s === 'string' && s.trim());
+        if (filtered.length > 0) body.stop = filtered;
+      }
+    }
 
     if (formattedTools && formattedTools.length > 0 && body.model !== 'deepseek-reasoner') {
       body.tools = formattedTools;
