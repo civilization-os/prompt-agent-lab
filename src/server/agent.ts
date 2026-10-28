@@ -45,8 +45,12 @@ export class AgentRunner {
       stop: req.modelParams.stop,
     };
 
+    const modelName = req.modelParams.model || 'deepseek-chat';
+    const isReasoner = modelName === 'deepseek-reasoner';
+
     const chatModel = new DeepSeekChatModel(modelOptions);
-    const tools = getSelectedTools(req.modelParams.enabledTools);
+    // DeepSeek-R1 (reasoner) 官方 API 当前不支持函数调用 (tools)，仅 chat 支持
+    const tools = isReasoner ? [] : getSelectedTools(req.modelParams.enabledTools);
 
     const loop = new AgentLoop({
       model: chatModel,

@@ -140,7 +140,7 @@ export class DeepSeekChatModel implements ILoopChatModel {
     const stop = (params.stop as string | string[]) ?? this.defaultOptions.stop;
     if (stop) body.stop = stop;
 
-    if (formattedTools && formattedTools.length > 0) {
+    if (formattedTools && formattedTools.length > 0 && body.model !== 'deepseek-reasoner') {
       body.tools = formattedTools;
     }
 
@@ -260,7 +260,7 @@ export class DeepSeekChatModel implements ILoopChatModel {
     const stop = (params.stop as string | string[]) ?? this.defaultOptions.stop;
     if (stop) body.stop = stop;
 
-    if (formattedTools && formattedTools.length > 0) {
+    if (formattedTools && formattedTools.length > 0 && body.model !== 'deepseek-reasoner') {
       body.tools = formattedTools;
     }
 

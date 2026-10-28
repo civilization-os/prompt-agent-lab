@@ -26,8 +26,10 @@ app.post('/api/chat/stream', async (req, res) => {
   res.flushHeaders?.();
 
   const controller = new AbortController();
-  req.on('close', () => {
-    controller.abort();
+  res.on('close', () => {
+    if (!res.writableEnded) {
+      controller.abort();
+    }
   });
 
   try {
@@ -51,6 +53,10 @@ app.post('/api/chat/stream', async (req, res) => {
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (error: any) {
+    if (controller.signal.aborted) {
+      res.end();
+      return;
+    }
     const errPayload = {
       type: 'error',
       error: {
@@ -58,8 +64,10 @@ app.post('/api/chat/stream', async (req, res) => {
         stack: error.stack,
       },
     };
-    res.write(`data: ${JSON.stringify(errPayload)}\n\n`);
-    res.end();
+    try {
+      res.write(`data: ${JSON.stringify(errPayload)}\n\n`);
+      res.end();
+    } catch {}
   }
 });
 
@@ -75,8 +83,10 @@ app.post('/api/evaluate/stream', async (req, res) => {
   res.flushHeaders?.();
 
   const controller = new AbortController();
-  req.on('close', () => {
-    controller.abort();
+  res.on('close', () => {
+    if (!res.writableEnded) {
+      controller.abort();
+    }
   });
 
   try {
@@ -99,14 +109,20 @@ app.post('/api/evaluate/stream', async (req, res) => {
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (error: any) {
+    if (controller.signal.aborted) {
+      res.end();
+      return;
+    }
     const errPayload = {
       type: 'error',
       error: {
         message: error.message || '评测过程出现异常',
       },
     };
-    res.write(`data: ${JSON.stringify(errPayload)}\n\n`);
-    res.end();
+    try {
+      res.write(`data: ${JSON.stringify(errPayload)}\n\n`);
+      res.end();
+    } catch {}
   }
 });
 
