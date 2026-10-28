@@ -209,60 +209,90 @@ export const App: React.FC = () => {
             try {
               const event = JSON.parse(trimmed.slice(6));
 
-              setMessages((prevMsgs) => {
-                const updated = [...prevMsgs];
-                const last = updated.find((m) => m.id === assistantMsgId);
-                if (!last) return prevMsgs;
+              setMessages((prevMsgs) =>
+                prevMsgs.map((msg) => {
+                  if (msg.id !== assistantMsgId) return msg;
 
-                if (event.type === 'text-delta') {
-                  last.content += event.delta;
-                } else if (event.type === 'reasoning-delta') {
-                  last.reasoningContent = (last.reasoningContent || '') + event.delta;
-                } else if (event.type === 'tool-call-start') {
-                  last.toolCalls = last.toolCalls || [];
-                  last.toolCalls.push({
-                    id: event.toolCall.id,
-                    name: event.toolCall.name,
-                    arguments: '',
-                    status: 'calling',
-                  });
-                } else if (event.type === 'tool-call-delta') {
-                  last.toolCalls = last.toolCalls || [];
-                  const tc = last.toolCalls.find((t) => t.id === event.toolCallId);
-                  if (tc) {
-                    tc.arguments = (tc.arguments as string) + event.delta;
+                  if (event.type === 'text-delta') {
+                    return {
+                      ...msg,
+                      content: msg.content + event.delta,
+                    };
                   }
-                } else if (event.type === 'tool-executing') {
-                  last.toolCalls = last.toolCalls || [];
-                  const tc = last.toolCalls.find((t) => t.id === event.toolCall.id);
-                  if (tc) {
-                    tc.status = 'executing';
+                  if (event.type === 'reasoning-delta') {
+                    return {
+                      ...msg,
+                      reasoningContent: (msg.reasoningContent || '') + event.delta,
+                    };
                   }
-                } else if (event.type === 'tool-result') {
-                  last.toolCalls = last.toolCalls || [];
-                  const tc = last.toolCalls.find((t) => t.id === event.toolCallId);
-                  if (tc) {
-                    tc.status = 'done';
-                    tc.result = event.result;
+                  if (event.type === 'tool-call-start') {
+                    const existing = msg.toolCalls || [];
+                    if (existing.some((t) => t.id === event.toolCall.id)) return msg;
+                    return {
+                      ...msg,
+                      toolCalls: [
+                        ...existing,
+                        {
+                          id: event.toolCall.id,
+                          name: event.toolCall.name,
+                          arguments: '',
+                          status: 'calling',
+                        },
+                      ],
+                    };
                   }
-                } else if (event.type === 'tool-repair-attempt') {
-                  last.toolCalls = last.toolCalls || [];
-                  const tc = last.toolCalls.find((t) => t.id === event.toolCallId);
-                  if (tc) {
-                    tc.status = 'calling';
-                    tc.repairAttempt = event.attempt;
-                    tc.error = event.error;
+                  if (event.type === 'tool-call-delta') {
+                    return {
+                      ...msg,
+                      toolCalls: (msg.toolCalls || []).map((t) =>
+                        t.id === event.toolCallId
+                          ? { ...t, arguments: (typeof t.arguments === 'string' ? t.arguments : '') + event.delta }
+                          : t
+                      ),
+                    };
                   }
-                } else if (event.type === 'completed') {
-                  if (event.usage) {
-                    last.usage = event.usage;
+                  if (event.type === 'tool-executing') {
+                    return {
+                      ...msg,
+                      toolCalls: (msg.toolCalls || []).map((t) =>
+                        t.id === event.toolCall.id ? { ...t, status: 'executing' } : t
+                      ),
+                    };
                   }
-                } else if (event.type === 'error') {
-                  last.content += `\n\n> ⚠️ **执行错误**: ${event.error?.message || '未知错误'}`;
-                }
+                  if (event.type === 'tool-result') {
+                    return {
+                      ...msg,
+                      toolCalls: (msg.toolCalls || []).map((t) =>
+                        t.id === event.toolCallId ? { ...t, status: 'done', result: event.result } : t
+                      ),
+                    };
+                  }
+                  if (event.type === 'tool-repair-attempt') {
+                    return {
+                      ...msg,
+                      toolCalls: (msg.toolCalls || []).map((t) =>
+                        t.id === event.toolCallId
+                          ? { ...t, status: 'calling', repairAttempt: event.attempt, error: event.error }
+                          : t
+                      ),
+                    };
+                  }
+                  if (event.type === 'completed') {
+                    return {
+                      ...msg,
+                      usage: event.usage || msg.usage,
+                    };
+                  }
+                  if (event.type === 'error') {
+                    return {
+                      ...msg,
+                      content: msg.content + `\n\n> ⚠️ **执行错误**: ${event.error?.message || '未知错误'}`,
+                    };
+                  }
 
-                return updated;
-              });
+                  return msg;
+                })
+              );
             } catch {
               // ignore
             }
