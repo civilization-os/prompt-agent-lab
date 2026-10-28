@@ -1,0 +1,20 @@
+# 依赖与构建产物
+node_modules/
+dist/
+.pnpm-debug.log*
+
+# 环境变量与密钥配置文件（严格保护，严禁上传代码仓库）
+.env
+.env.*
+!.env.example
+data/settings.json
+
+# 证书与私钥
+*.pem
+*.key
+*.cert
+
+# 系统临时文件与日志
+*.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,46 @@
+{
+  "id": "exp_demo_baseline_002",
+  "name": "普通助手未加约束（对照组：直接盲目回答）",
+  "createdAt": "2026-10-28T13:45:00.000Z",
+  "systemPrompt": "你是一个乐于助人的 AI 助手。请直接回答用户的问题并给出最详细的建议。",
+  "experimentPurpose": {
+    "title": "未加反问约束时的基线行为观测",
+    "goal": "观测在常规提示词下，模型面对模糊提问是否会盲目猜测并抛出一大堆配置单。",
+    "expectedBehavior": "测试是否会出现盲目推荐或信息过载的问题。",
+    "testCases": [
+      "我想买一台电脑，帮我推荐一下。"
+    ]
+  },
+  "modelParams": {
+    "model": "deepseek-chat",
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "max_tokens": 2048,
+    "frequency_penalty": 0,
+    "presence_penalty": 0,
+    "response_format": "text",
+    "enabledTools": [],
+    "maxIterations": 10
+  },
+  "messages": [
+    {
+      "id": "msg_base_user_1",
+      "role": "user",
+      "content": "我想买一台电脑，帮我推荐一下。",
+      "timestamp": 1730123100000
+    },
+    {
+      "id": "msg_base_assistant_1",
+      "role": "assistant",
+      "content": "推荐电脑主要看您的需求，以下为您推荐几款热门机型：\n\n1. **轻薄办公本**：\n- **MacBook Air M3**：续航长，屏幕好，适合学生和办公人群。\n- **ThinkPad ThinkBook 14+**：接口丰富，性价比高。\n\n2. **游戏本 / 高性能本**：\n- **联想拯救者 Y9000P**：i9 + RTX4060，散热强劲。\n- **华硕天选 5 Pro**：外观二次元，轻便性能兼具。\n\n3. **台式机**：\n如果您不需要外带，可以考虑组装台式机，比如 i5-13400F + RTX4060，预算 5000 元左右。\n\n您可以告诉我具体预算，我再帮您精挑细选。",
+      "timestamp": 1730123108000
+    }
+  ],
+  "evaluation": {
+    "verdict": "PARTIAL",
+    "score": 45,
+    "summary": "模型缺乏克制力，在毫无用户预算与用途输入的前提下，直接堆砌了5款不同定位的电脑，导致信息过载与推测成本过高。",
+    "rawReport": "### 🎯 1. 实验总体评价与裁决\n- **裁决结论**：部分符合 (PARTIAL / 低分)\n- **综合得分**：45 分\n- **一句话总结**：典型未约束 Prompt 的发散表现：在关键信息严重缺失时，直接盲目提供了一大堆宽泛方案。\n\n### 📋 2. 行为准则分析\n- 模型遵循了通用乐于助人的设定，但未能识别用户的模糊输入，导致回答泛滥且缺乏针对性。\n\n### 🛠️ 3. 优化建议\n- 需要在 System Prompt 中加入针对模糊提问的前置澄清拦截规则。\n\n```json:evaluation_meta\n{\n  \"verdict\": \"PARTIAL\",\n  \"score\": 45,\n  \"summary\": \"缺乏约束导致的盲目回答与信息过载。\"\n}\n```",
+    "evaluatedAt": "2026-10-28T13:46:00.000Z"
+  }
+}
